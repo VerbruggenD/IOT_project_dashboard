@@ -8,51 +8,156 @@
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.2.1/gauge.min.js"></script>
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function() {
     //var socket = io.connect('http://' + document.domain + ':' + location.port, {secure: true});
-	var socket = io.connect('/');
+    var socket = io.connect('/');
 
-  var topicSensor = "test1";
-  var topicActuator = "test2";
-  var qos = 0;
-  var dataSensors = '{"topic": "' + topicSensor + '", "qos": ' + qos + '}';
-  var dataActuator = '{"topic": "' + topicActuator + '", "qos": ' + qos + '}';
-  socket.emit('subscribe', data=dataSensors);
-  socket.emit('subscribe', data=dataActuator);
+    var topicSensor = "IOT/sensor/#";
+    var topicActuator = "IOT/actuator/#";
+    var qos = 0;
+    var dataSensors = '{"topic": "' + topicSensor + '", "qos": ' + qos + '}';
+    var dataActuator = '{"topic": "' + topicActuator + '", "qos": ' + qos + '}';
+    socket.emit('subscribe', data=dataSensors);
+    socket.emit('subscribe', data=dataActuator);
 
-    // $('#publish').click(function(event) {
-    //   var topic = $('#topic').val();
-    //   var message = $('#message').val();
-    //   var qos = $('#qos').val();
-    //   var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
-    //   socket.emit('publish', data=data);
-    // });
+    //var xValues = new Array();
+    var xValues = [-9,-8,-7,-6,-5,-4,-3,-2,-1,0]
 
-    // $('#subscribe').click(function(event) {
-    //   var topic = $('#subscribe_topic').val();
-    //   var qos = $('#subscribe_qos').val();
-    //   var data = '{"topic": "' + topic + '", "qos": ' + qos + '}';
-    //   socket.emit('subscribe', data=data);
-    //   $('#subscribe').hide();
-    //   $('#unsubscribe').show();
-    //   $('#subscribe_topic').prop('readonly', true);
-    // });
+    var yTemp = [0,0,0,0,0,0,0,0,0,0];
+    var yHumidity = [0,0,0,0,0,0,0,0,0,0];
 
-    // $('#unsubscribe').click(function(event) {
-    //   socket.emit('unsubscribe_all');
-    //   $('#subscribe').show();
-    //   $('#unsubscribe').hide();
-    //   $('#subscribe_topic').prop('readonly', false);
-    // });
+    var xTempBar = ["Temperature"];
+    var xHumidBar = ["Humidity"];
+
+    var currentTemp = [0];
+    var currentHumid = [0];
+
+    // var chartData = [ {x: 1, y:1},
+    //                   {x: 2, y:2},
+    //                   {x: 3, y:1},
+    //                   {x: 4, y:2},
+    //                   {x: 5, y:1},
+    //                   {x: 6, y:2},
+    //                   {x: 7, y:1},
+    //                   {x: 8, y:2} ]
+
+    tempChart = new Chart("tempChart", {
+    type: "line",
+    data: {
+      labels: xValues,
+      datasets: [{
+        label: "Temperature (˚C)",
+        showInLegend: true, 
+        borderColor: "red",
+        data: yTemp,
+        fill: true
+        }]
+      },
+      options:{
+      responsive: true
+      }
+    });
+
+    humidChart = new Chart("humidChart", {
+      type: "line",
+      data: {
+        labels: xValues,
+        datasets: [{
+          label: "Humidity (%)",
+          showInLegend: true, 
+          borderColor: "blue",
+          data: yHumidity,
+          fill: true
+        }]
+      },
+        options:{
+          responsive: true
+        }
+    });
+
+    var optsTemp = {
+      colorStart: '#291B00',
+      colorStop: '#FF0000',
+      
+    };
+
+    var optsHumid = {
+      colorStart: '#001B29',
+      colorStop: '#0000FF'
+    };
+
+    var targetTemp = document.getElementById('gauge_temp'); 
+    var gaugeTemp = new Gauge(targetTemp).setOptions(optsTemp);
+    
+    var targetHumid = document.getElementById('gauge_humid'); 
+    var gaugeHumid = new Gauge(targetHumid).setOptions(optsHumid);
+
+    document.getElementById("currentTemp").className = "currentTemp";
+    gaugeTemp.setTextField(document.getElementById("currentTemp"));
+
+    document.getElementById("currentHumid").className = "currentHumid";
+    gaugeHumid.setTextField(document.getElementById("currentHumid"));
+
+    gaugeTemp.maxValue = 50;
+    gaugeTemp.setMinValue(0); 
+    gaugeTemp.set(0);
+
+    gaugeHumid.maxValue = 100;
+    gaugeHumid.setMinValue(0); 
+    gaugeHumid.set(0);
+
+      // $('#publish').click(function(event) {
+      //   var topic = $('#topic').val();
+      //   var message = $('#message').val();
+      //   var qos = $('#qos').val();
+      //   var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
+      //   socket.emit('publish', data=data);
+      // });
+
+      // $('#subscribe').click(function(event) {
+      //   var topic = $('#subscribe_topic').val();
+      //   var qos = $('#subscribe_qos').val();
+      //   var data = '{"topic": "' + topic + '", "qos": ' + qos + '}';
+      //   socket.emit('subscribe', data=data);
+      //   $('#subscribe').hide();
+      //   $('#unsubscribe').show();
+      //   $('#subscribe_topic').prop('readonly', true);
+      // });
+
+      // $('#unsubscribe').click(function(event) {
+      //   socket.emit('unsubscribe_all');
+      //   $('#subscribe').show();
+      //   $('#unsubscribe').hide();
+      //   $('#subscribe_topic').prop('readonly', false);
+      // });
 
     socket.on('mqtt_message', function(data) {
       console.log(data);
       var text = '(' + data['topic'] + ' qos: ' + data['qos'] + ') ' + data['payload'];
       var $textarea = $('#subscribe_messages');
-      $textarea.val($textarea.val() + text + '\n');
+      //$textarea.val($textarea.val() + text + '\n');
+      if (data['topic'] == "IOT/sensor/temp") {
+        for (let i = 0; i<9; i++) {
+      	  yTemp[i] = yTemp[i+1];
+        }
+        yTemp[9] = JSON.parse(data['payload']);
+        tempChart.update();
+        gaugeTemp.set(yTemp[9]);
+      }
+      if (data['topic'] == "IOT/sensor/humid") {
+        for (let i = 0; i<9; i++) {
+      	  yHumidity[i] = yHumidity[i+1];
+        }
+        yHumidity[9] = JSON.parse(data['payload']);
+        humidChart.update();
+        gaugeHumid.set(yHumidity[9]);
+      }
     })
   });
+
 </script>
 {% endblock %}
 
@@ -60,10 +165,10 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-xs-12">
-      <h1>Flask-MQTT Example</h1>
+      <h1>IOT humidity control</h1>
     </div>
   </div>
-  <div class="row">
+  <div class="row"><!-- 
     <div class="col-xs-6">
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -149,6 +254,54 @@
         </div>
       </div>
     </div>
+  </div> -->
+
+  <div class="row">
+    <div class="col-xs-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Sensor node 1</h3>
+        </div>
+        <div class="panel-body">
+          <h1>Temperature and humidity history</h1>
+          <canvas id="tempChart" style="width:100%;max-width:700px"></canvas>
+          <canvas id="humidChart" style="width:100%;max-width:700px"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Sensor node 1</h3>
+        </div>
+        <div class="panel-body">
+          <h1>Current temperature</h1>
+          <div>
+            <canvas id="gauge_temp"></canvas>
+            <div>
+              <p>
+                Temperature
+                <div id="currentTemp"></div>
+                in degrees Celsius
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <h1>Current humidity</h1>
+          <div>
+            <canvas id="gauge_humid"></canvas>
+            <div>
+              <p>
+                Humidity percentage: 
+                <div id="currentHumid"></div> 
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
 </div>
 {% endblock %}
