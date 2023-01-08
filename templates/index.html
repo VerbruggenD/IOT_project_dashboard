@@ -15,7 +15,7 @@
     //var socket = io.connect('http://' + document.domain + ':' + location.port, {secure: true});
     var socket = io.connect('/');
 
-    // var topicSensor = "sensor/#";
+    var topicSensor = "sensor/#";
     // var topicActuator = "actuator/#";
 
     var sensorControlTopic = "sensor/control";
@@ -25,10 +25,10 @@
     var turnOffMsg = "TURN OFF";
     var autoMsg = "AUTO";
 
-    // var qos = 0;
-    // var dataSensors = '{"topic": "' + topicSensor + '", "qos": ' + qos + '}';
+    var qos = 0;
+    var dataSensors = '{"topic": "' + topicSensor + '", "qos": ' + qos + '}';
     // var dataActuator = '{"topic": "' + topicActuator + '", "qos": ' + qos + '}';
-    // socket.emit('subscribe', data=dataSensors);
+    socket.emit('subscribe', data=dataSensors);
     // socket.emit('subscribe', data=dataActuator);
 
     //var xValues = new Array();
