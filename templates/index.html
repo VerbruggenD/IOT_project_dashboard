@@ -15,13 +15,21 @@
     //var socket = io.connect('http://' + document.domain + ':' + location.port, {secure: true});
     var socket = io.connect('/');
 
-    var topicSensor = "IOT/sensor/#";
-    var topicActuator = "IOT/actuator/#";
-    var qos = 0;
-    var dataSensors = '{"topic": "' + topicSensor + '", "qos": ' + qos + '}';
-    var dataActuator = '{"topic": "' + topicActuator + '", "qos": ' + qos + '}';
-    socket.emit('subscribe', data=dataSensors);
-    socket.emit('subscribe', data=dataActuator);
+    // var topicSensor = "sensor/#";
+    // var topicActuator = "actuator/#";
+
+    var sensorControlTopic = "sensor/control";
+    var sensorConfigTopic = "sensor/config";
+
+    var turnOnMsg = "TURN ON";
+    var turnOffMsg = "TURN OFF";
+    var autoMsg = "AUTO";
+
+    // var qos = 0;
+    // var dataSensors = '{"topic": "' + topicSensor + '", "qos": ' + qos + '}';
+    // var dataActuator = '{"topic": "' + topicActuator + '", "qos": ' + qos + '}';
+    // socket.emit('subscribe', data=dataSensors);
+    // socket.emit('subscribe', data=dataActuator);
 
     //var xValues = new Array();
     var xValues = [-9,-8,-7,-6,-5,-4,-3,-2,-1,0]
@@ -109,13 +117,37 @@
     gaugeHumid.setMinValue(0); 
     gaugeHumid.set(0);
 
-      // $('#publish').click(function(event) {
-      //   var topic = $('#topic').val();
-      //   var message = $('#message').val();
-      //   var qos = $('#qos').val();
-      //   var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
-      //   socket.emit('publish', data=data);
-      // });
+      $('#publish-config').click(function(event) {
+        var topic = sensorConfigTopic;
+        var message = $('#threshold').val();
+        var qos = 0;
+        var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
+        socket.emit('publish', data=data);
+      });
+
+      $('#control-on').click(function(event) {
+        var topic = sensorControlTopic;
+        var message = turnOnMsg;
+        var qos = 0;
+        var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
+        socket.emit('publish', data=data);
+      });
+
+      $('#control-off').click(function(event) {
+        var topic = sensorControlTopic;
+        var message = turnOffMsg;
+        var qos = 0;
+        var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
+        socket.emit('publish', data=data);
+      });
+
+      $('#control-auto').click(function(event) {
+        var topic = sensorControlTopic;
+        var message = autoMsg;
+        var qos = 0;
+        var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
+        socket.emit('publish', data=data);
+      });
 
       // $('#subscribe').click(function(event) {
       //   var topic = $('#subscribe_topic').val();
@@ -139,7 +171,7 @@
       var text = '(' + data['topic'] + ' qos: ' + data['qos'] + ') ' + data['payload'];
       var $textarea = $('#subscribe_messages');
       //$textarea.val($textarea.val() + text + '\n');
-      if (data['topic'] == "IOT/sensor/temp") {
+      if (data['topic'] == "sensor/temperature") {
         for (let i = 0; i<9; i++) {
       	  yTemp[i] = yTemp[i+1];
         }
@@ -147,7 +179,7 @@
         tempChart.update();
         gaugeTemp.set(yTemp[9]);
       }
-      if (data['topic'] == "IOT/sensor/humid") {
+      if (data['topic'] == "sensor/humidity") {
         for (let i = 0; i<9; i++) {
       	  yHumidity[i] = yHumidity[i+1];
         }
@@ -165,105 +197,18 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-xs-12">
-      <h1>IOT humidity control</h1>
+      <h1>IOT smart home dashboard</h1>
     </div>
   </div>
-  <div class="row"><!-- 
-    <div class="col-xs-6">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Publish MQTT Message</h3>
-        </div>
-        <div class="panel-body">
-          <div class="col-xs-12">
-            <div class="row">
-              <div class="form-horizontal">
-                <div class="form-group">
-                  <label class="control-label col-xs-4">Topic: </label>
-                  <div class="col-xs-8">
-                    <input id="topic" class="form-control">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="control-label col-xs-4">Message: </label>
-                  <div class="col-xs-8">
-                    <input id="message" class="form-control">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="control-label col-xs-4">Qos: </label>
-                  <div class="col-xs-8">
-                    <select id="qos" class="form-control">
-                      <option value=0>0</option>
-                      <option value=1>1</option>
-                      <option value=2>2</option>
-                    </select>
-                  </div> 
-                </div>
-                <div class="form-group">
-                  <div class="col-xs-8 col-xs-offset-4">
-                    <button id="publish" class="btn btn-primary">Publish</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-xs-6">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Subscribe MQTT Messages</h3>
-        </div>
-        <div class="panel-body">
-          <div class="col-xs-12">
-            <div class="row">
-              <div class="form-horizontal">
-                <div class="form-group">
-                  <label class="control-label col-xs-4">Topic:</label>
-                  <div class="col-xs-8">
-                    <input id="subscribe_topic" class="form-control">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="control-label col-xs-4">Qos: </label>
-                  <div class="col-xs-8">
-                    <select id="subscribe_qos" class="form-control">
-                      <option value=0>0</option>
-                      <option value=1>1</option>
-                      <option value=2>2</option>
-                    </select>
-                  </div> 
-                </div>
-                <div class="form-group">
-                  <div class="col-xs-8 col-xs-offset-4">
-                    <button id="subscribe" class="btn btn-primary">Subscribe</button>
-                    <button id="unsubscribe" class="btn btn-default" style="display: none;" >Unsubscribe</button>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="control-label col-xs-4">Messages:</label>
-                  <div class="col-xs-8">
-                    <textarea id="subscribe_messages" class="form-control" rows=10></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div> -->
 
   <div class="row">
     <div class="col-xs-6">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Sensor node 1</h3>
+          <h3 class="panel-title">Sensor node 1: temp and humidity</h3>
         </div>
         <div class="panel-body">
-          <h1>Temperature and humidity history</h1>
+          <h2>Temperature and humidity history</h1>
           <canvas id="tempChart" style="width:100%;max-width:700px"></canvas>
           <canvas id="humidChart" style="width:100%;max-width:700px"></canvas>
         </div>
@@ -272,10 +217,10 @@
     <div class="col-xs-6">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Sensor node 1</h3>
+          <h3 class="panel-title">Sensor node 1: temp and humidity</h3>
         </div>
         <div class="panel-body">
-          <h1>Current temperature</h1>
+          <h2>Current temperature</h1>
           <div>
             <canvas id="gauge_temp"></canvas>
             <div>
@@ -288,7 +233,7 @@
           </div>
         </div>
         <div class="panel-body">
-          <h1>Current humidity</h1>
+          <h2>Current humidity</h1>
           <div>
             <canvas id="gauge_humid"></canvas>
             <div>
@@ -301,6 +246,35 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <div class="panel-title">Actuator node 1: Dehumidifier</div>
+        </div>
+        <div class="panel-body">
+          <h2>Select an override mode or auto</h1>
+          <button id="control-on" >Override ON</button>
+          <button id="control-off" >Override OFF</button>
+          <button id="control-auto" >Mode: auto</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <div class="panel-title">Actuator node 1: Dehumidifier</div>
+        </div>
+        <div class="panel-body">
+          <h2>Set threshold for humidity for mode: auto</h1>
+          <input id="threshold" class="form-control"> <button id="publish-config">Set threshold</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>
